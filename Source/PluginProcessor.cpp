@@ -63,6 +63,14 @@ SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
     boolHelper(midBandComp.bypassed,    Names::Bypassed_Mid_Band);
     boolHelper(highBandComp.bypassed,   Names::Bypassed_High_Band);
     
+    boolHelper(lowBandComp.mute,    Names::Mute_Low_Band);
+    boolHelper(midBandComp.mute,    Names::Mute_Mid_Band);
+    boolHelper(highBandComp.mute,   Names::Mute_High_Band);
+    
+    boolHelper(lowBandComp.solo,    Names::Solo_Low_Band);
+    boolHelper(midBandComp.solo,    Names::Solo_Mid_Band);
+    boolHelper(highBandComp.solo,   Names::Solo_High_Band);
+    
     floatHelper(lowMidCrossover,        Names::Low_Mid_Crossover_Freq);
     floatHelper(midHighCrossover,       Names::Mid_High_Crossover_Freq);
     
@@ -269,9 +277,42 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     };
     
-    addFilterBand(buffer, filterBuffers[0]);
-    addFilterBand(buffer, filterBuffers[1]);
-    addFilterBand(buffer, filterBuffers[2]);
+    auto bandsAreSoloed = false;
+    for( auto& comp : compressors )
+    {
+        if( comp.solo->get() )
+        {
+            bandsAreSoloed = true;
+            break;
+        }
+    }
+    
+//    addFilterBand(buffer, filterBuffers[0]);
+//    addFilterBand(buffer, filterBuffers[1]);
+//    addFilterBand(buffer, filterBuffers[2]);
+    
+    if( bandsAreSoloed )
+    {
+        for( size_t i = 0; i < compressors.size(); ++i )
+        {
+            auto& comp = compressors[i];
+            if( comp.solo->get() )
+            {
+                addFilterBand(buffer, filterBuffers[i]);
+            }
+        }
+    }
+    else
+    {
+        for( size_t i = 0; i < compressors.size(); ++i )
+        {
+            auto& comp = compressors[i];
+            if( ! comp.mute->get() )
+            {
+                addFilterBand(buffer, filterBuffers[i]);
+            }
+        }
+    }
 }
 
 //==============================================================================
@@ -373,43 +414,69 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
         sa.add( juce::String(choice, 1) );
     }
     
-    layout.add(std::make_unique<AudioParameterChoice>(ParameterID
-                                                      {params.at(Names::Ratio_Low_Band), 1},
+    layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
+                                                      params.at(Names::Ratio_Low_Band), 1},
                                                       params.at(Names::Ratio_Low_Band),
                                                       sa,
                                                       3));
-    layout.add(std::make_unique<AudioParameterChoice>(ParameterID
-                                                      {params.at(Names::Ratio_Mid_Band), 1},
+    layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
+                                                      params.at(Names::Ratio_Mid_Band), 1},
                                                       params.at(Names::Ratio_Mid_Band),
                                                       sa,
                                                       3));
-    layout.add(std::make_unique<AudioParameterChoice>(ParameterID
-                                                      {params.at(Names::Ratio_High_Band), 1},
+    layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
+                                                      params.at(Names::Ratio_High_Band), 1},
                                                       params.at(Names::Ratio_High_Band),
                                                       sa,
                                                       3));
     
-    layout.add(std::make_unique<AudioParameterBool>(ParameterID
-                                                    {params.at(Names::Bypassed_Low_Band), 1},
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Bypassed_Low_Band), 1},
                                                     params.at(Names::Bypassed_Low_Band),
                                                     false));
-    layout.add(std::make_unique<AudioParameterBool>(ParameterID
-                                                    {params.at(Names::Bypassed_Mid_Band), 1},
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Bypassed_Mid_Band), 1},
                                                     params.at(Names::Bypassed_Mid_Band),
                                                     false));
-    layout.add(std::make_unique<AudioParameterBool>(ParameterID
-                                                    {params.at(Names::Bypassed_High_Band), 1},
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Bypassed_High_Band), 1},
                                                     params.at(Names::Bypassed_High_Band),
                                                     false));
     
-    layout.add(std::make_unique<AudioParameterFloat>(ParameterID
-                                                    {params.at(Names::Low_Mid_Crossover_Freq), 1},
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID
+                                                    {params.at(Names::Mute_Low_Band), 1},
+                                                    params.at(Names::Mute_Low_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID
+                                                    {params.at(Names::Mute_Mid_Band), 1},
+                                                    params.at(Names::Mute_Mid_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID
+                                                    {params.at(Names::Mute_High_Band), 1},
+                                                    params.at(Names::Mute_High_Band),
+                                                    false));
+    
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Solo_Low_Band), 1},
+                                                    params.at(Names::Solo_Low_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Solo_Mid_Band), 1},
+                                                    params.at(Names::Solo_Mid_Band),
+                                                    false));
+    layout.add(std::make_unique<AudioParameterBool>(ParameterID {
+                                                    params.at(Names::Solo_High_Band), 1},
+                                                    params.at(Names::Solo_High_Band),
+                                                    false));
+    
+    layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
+                                                    params.at(Names::Low_Mid_Crossover_Freq), 1},
                                                     params.at(Names::Low_Mid_Crossover_Freq),
                                                     NormalisableRange<float>(20, 999, 1, 1),
                                                     400));
     
-    layout.add(std::make_unique<AudioParameterFloat>(ParameterID
-                                                    {params.at(Names::Mid_High_Crossover_Freq), 1},
+    layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
+                                                    params.at(Names::Mid_High_Crossover_Freq), 1},
                                                     params.at(Names::Mid_High_Crossover_Freq),
                                                     NormalisableRange<float>(1000, 20000, 1, 1),
                                                     2000));
