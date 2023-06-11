@@ -287,7 +287,7 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         compressors[i].process(filterBuffers[i]);
     }
     
-    auto numSamples = buffer.getNumSamples();
+    auto numSamples =  buffer.getNumSamples();
     auto numChannels = buffer.getNumChannels();
     
     buffer.clear();

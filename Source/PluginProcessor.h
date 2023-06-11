@@ -98,13 +98,13 @@ inline const std::map<Names, juce::String>& GetParams()
 
 struct CompressorBand
 {
-    juce::AudioParameterFloat* attack { nullptr };
-    juce::AudioParameterFloat* release { nullptr };
-    juce::AudioParameterFloat* threshold { nullptr };
-    juce::AudioParameterChoice* ratio { nullptr };
-    juce::AudioParameterBool* bypassed { nullptr };
-    juce::AudioParameterBool* mute { nullptr };
-    juce::AudioParameterBool* solo { nullptr };
+    juce::AudioParameterFloat*  attack    { nullptr };
+    juce::AudioParameterFloat*  release   { nullptr };
+    juce::AudioParameterFloat*  threshold { nullptr };
+    juce::AudioParameterChoice* ratio     { nullptr };
+    juce::AudioParameterBool*   bypassed  { nullptr };
+    juce::AudioParameterBool*   mute      { nullptr };
+    juce::AudioParameterBool*   solo      { nullptr };
     
     void prepare(const juce::dsp::ProcessSpec& spec)
     {
@@ -163,20 +163,20 @@ public:
   //==============================================================================
   const juce::String getName() const override;
 
-  bool acceptsMidi() const override;
-  bool producesMidi() const override;
-  bool isMidiEffect() const override;
+  bool acceptsMidi()            const override;
+  bool producesMidi()           const override;
+  bool isMidiEffect()           const override;
   double getTailLengthSeconds() const override;
 
   //==============================================================================
-  int getNumPrograms() override;
-  int getCurrentProgram() override;
-  void setCurrentProgram(int index) override;
-  const juce::String getProgramName(int index) override;
+  int getNumPrograms()                                           override;
+  int getCurrentProgram()                                        override;
+  void setCurrentProgram(int index)                              override;
+  const juce::String getProgramName(int index)                   override;
   void changeProgramName(int index, const juce::String &newName) override;
 
   //==============================================================================
-  void getStateInformation(juce::MemoryBlock &destData) override;
+  void getStateInformation(juce::MemoryBlock &destData)       override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
   using APVTS = juce::AudioProcessorValueTreeState;
@@ -196,14 +196,14 @@ private:
             HP1,    LP2,
                     HP2;
     
-    juce::AudioParameterFloat* lowMidCrossover { nullptr };
+    juce::AudioParameterFloat* lowMidCrossover  { nullptr };
     juce::AudioParameterFloat* midHighCrossover { nullptr };
     
     std::array<juce::AudioBuffer<float>, 3> filterBuffers;
     
     juce::dsp::Gain<float> inputGain, outputGain;
-    juce::AudioParameterFloat* inputGainParam { nullptr };
-    juce::AudioParameterFloat* outputGainParam { nullptr };
+    juce::AudioParameterFloat* inputGainParam   { nullptr };
+    juce::AudioParameterFloat* outputGainParam  { nullptr };
     
     template<typename T, typename U>
     void applyGain(T& buffer, U& gain)
