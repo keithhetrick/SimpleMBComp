@@ -10,14 +10,14 @@
 
 /*
  DSP Roadmap
- 1. figure out how to split the audio into 3 bands. // DONE
- 2. create parameters to control where this split happens. // DONE
- 3. prove that splitting into 3 bands produces no audible artifacts. // DONE
- 4. create audio parameters for the 3 compressor bands. These need to live on each band instance. // DONE
- 5. add 2 remaining compressors. // DONE
- 6. add ability to mute/solo/bypass individual compressors. // DONE
- 7. add input and output gain to offset changes in output level.
- 8. clean u panything that needs cleaning up.
+ 1. figure out how to split the audio into 3 bands.                             // DONE
+ 2. create parameters to control where this split happens.                      // DONE
+ 3. prove that splitting into 3 bands produces no audible artifacts.            // DONE
+ 4. create audio param for 3 comps. They each need a band instance.             // DONE
+ 5. add 2 remaining compressors.                                                // DONE
+ 6. add ability to mute/solo/bypass individual compressors.                     // DONE
+ 7. add input and output gain to offset changes in output level.                // DONE
+ 8. clean up anything that needs cleaning up.                                   // DONE
  */
 
 #include <JuceHeader.h>
@@ -56,6 +56,9 @@ enum Names
     Solo_Low_Band,
     Solo_Mid_Band,
     Solo_High_Band,
+    
+    Gain_In,
+    Gain_Out,
 };
 
 inline const std::map<Names, juce::String>& GetParams()
@@ -85,6 +88,8 @@ inline const std::map<Names, juce::String>& GetParams()
         {Solo_Low_Band,             "Solo Low Band"},
         {Solo_Mid_Band,             "Solo Mid Band"},
         {Solo_High_Band,            "Solo High Band"},
+        {Gain_In,                   "Gain_In"},
+        {Gain_Out,                  "Gain_Out"},
     };
     
     return params;
@@ -195,6 +200,22 @@ private:
     juce::AudioParameterFloat* midHighCrossover { nullptr };
     
     std::array<juce::AudioBuffer<float>, 3> filterBuffers;
-  //==============================================================================
+    
+    juce::dsp::Gain<float> inputGain, outputGain;
+    juce::AudioParameterFloat* inputGainParam { nullptr };
+    juce::AudioParameterFloat* outputGainParam { nullptr };
+    
+    template<typename T, typename U>
+    void applyGain(T& buffer, U& gain)
+    {
+        auto block = juce::dsp::AudioBlock<float>(buffer);
+        auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
+        gain.process(ctx);
+    }
+    
+    void updateState();
+    
+    void splitBands(const juce::AudioBuffer<float>& inputBuffer);
+    //==============================================================================
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SimpleMBCompAudioProcessor)
 };
