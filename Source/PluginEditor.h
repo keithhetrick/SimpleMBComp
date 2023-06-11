@@ -158,6 +158,21 @@ void addLabelPairs(Labels& labels, const ParamType& param, const SuffixType& suf
     labels.add({1.f, getValString(param, false, suffix)});
 }
 
+struct CompressorBandControls : juce::Component
+{
+    CompressorBandControls(juce::AudioProcessorValueTreeState& apvts);
+    void resized() override;
+    void paint(juce::Graphics& g) override;
+private:
+    RotarySlider attackSlider, releaseSlider, thresholdSlider, ratioSlider;
+    
+    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    std::unique_ptr<Attachment> attackSliderAttachment,
+                                releaseSliderAttachment,
+                                thresholdSliderAttachment,
+                                ratioSliderAttachment;
+};
+
 struct GlobalControls : juce::Component
 {
     GlobalControls(juce::AudioProcessorValueTreeState& apvts);
@@ -194,11 +209,12 @@ private:
     SimpleMBCompAudioProcessor& audioProcessor;
     
     Placeholder controlBar,
-                analyzer,
+                analyzer;
 //                globalControls,
-                bandControls;
+//                bandControls;
     
     GlobalControls globalControls { audioProcessor.apvts };
+    CompressorBandControls bandControls { audioProcessor.apvts };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleMBCompAudioProcessorEditor)
 };

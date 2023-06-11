@@ -206,7 +206,9 @@ void RotarySliderWithLabels::paint(juce::Graphics &g)
         r.setCentre(c);
         r.setY(r.getY() + getTextHeight());
         
-        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+        g.drawFittedText(str, r.toNearestInt(),
+                         juce::Justification::centred,
+                         1);
     }
     
 }
@@ -265,6 +267,92 @@ Placeholder::Placeholder()
 {
     juce::Random r;
     customColor = juce::Colour(r.nextInt(255), r.nextInt(255), r.nextInt(255));
+}
+//==============================================================================
+CompressorBandControls::CompressorBandControls(juce::AudioProcessorValueTreeState& apvts)
+{
+    using namespace Params;
+    const auto& params = GetParams();
+    
+//    auto getParamHelper = [&params, &apvts](const auto& name) -> auto&
+//    {
+//        return getParam(apvts, params, name);
+//    };
+    
+    auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
+                                                  const auto& name,
+                                                  auto& slider)
+    {
+        makeAttachment(attachment, apvts, params, name, slider);
+    };
+    
+    makeAttachmentHelper(attackSliderAttachment,
+                         Names::Attack_Mid_Band,
+                         attackSlider);
+    
+    makeAttachmentHelper(releaseSliderAttachment,
+                         Names::Release_Mid_Band,
+                         releaseSlider);
+    
+    makeAttachmentHelper(thresholdSliderAttachment,
+                         Names::Threshold_Mid_Band,
+                         thresholdSlider);
+    
+    makeAttachmentHelper(ratioSliderAttachment,
+                         Names::Ratio_Mid_Band,
+                         ratioSlider);
+    
+    addAndMakeVisible(attackSlider);
+    addAndMakeVisible(releaseSlider);
+    addAndMakeVisible(thresholdSlider);
+    addAndMakeVisible(ratioSlider);
+}
+
+void CompressorBandControls::resized()
+{
+    auto bounds = getLocalBounds().reduced(5);
+    using namespace juce;
+    
+    FlexBox flexbox;
+    flexbox.flexDirection = FlexBox::Direction::row;
+    flexbox.flexWrap = FlexBox::Wrap::noWrap;
+    
+    auto spacer = FlexItem().withWidth(4);
+    auto endCap = FlexItem().withWidth(6);
+    
+    flexbox.items.add(endCap);
+    flexbox.items.add(FlexItem(attackSlider).withFlex(1.f));
+    flexbox.items.add(spacer);
+    flexbox.items.add(FlexItem(releaseSlider).withFlex(1.f));
+    flexbox.items.add(spacer);
+    flexbox.items.add(FlexItem(thresholdSlider).withFlex(1.f));
+    flexbox.items.add(spacer);
+    flexbox.items.add(FlexItem(ratioSlider).withFlex(1.f));
+    flexbox.items.add(endCap);
+    
+    flexbox.performLayout(bounds);
+}
+
+void drawModuleBackground(juce::Graphics &g,
+                          juce::Rectangle<int> bounds)
+{
+    using namespace juce;
+    g.setColour(Colours::blueviolet);
+    g.fillAll();
+    
+    auto localBounds = bounds;
+    
+    bounds.reduce(3,3);
+    g.setColour(Colours::black);
+    g.fillRoundedRectangle(bounds.toFloat(), 3);
+    
+    g.drawRect(localBounds);
+}
+
+void CompressorBandControls::paint(juce::Graphics &g)
+{
+    auto bounds = getLocalBounds();
+    drawModuleBackground(g, bounds);
 }
 //==============================================================================
 GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
@@ -342,18 +430,8 @@ GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
 
 void GlobalControls::paint(juce::Graphics &g)
 {
-    using namespace juce;
     auto bounds = getLocalBounds();
-    g.setColour(Colours::blueviolet);
-    g.fillAll();
-    
-    auto localBounds = bounds;
-    
-    bounds.reduce(3,3);
-    g.setColour(Colours::black);
-    g.fillRoundedRectangle(bounds.toFloat(), 3);
-    
-    g.drawRect(localBounds);
+    drawModuleBackground(g, bounds);
 }
 
 void GlobalControls::resized()
@@ -389,7 +467,7 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
 //    addAndMakeVisible(controlBar);
 //    addAndMakeVisible(analyzer);
     addAndMakeVisible(globalControls);
-//    addAndMakeVisible(bandControls);
+    addAndMakeVisible(bandControls);
     
     setSize (600, 500);
 }
