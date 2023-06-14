@@ -1,25 +1,26 @@
 /*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ This file contains the basic framework code for a JUCE plugin processor.
+ 
+ ==============================================================================
+ */
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Params.h"
 
 //==============================================================================
 SimpleMBCompAudioProcessor::SimpleMBCompAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+#endif
+                  .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+                  )
 #endif
 {
     using namespace Params;
@@ -98,29 +99,29 @@ const juce::String SimpleMBCompAudioProcessor::getName() const
 
 bool SimpleMBCompAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool SimpleMBCompAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool SimpleMBCompAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double SimpleMBCompAudioProcessor::getTailLengthSeconds() const
@@ -131,7 +132,7 @@ double SimpleMBCompAudioProcessor::getTailLengthSeconds() const
 int SimpleMBCompAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int SimpleMBCompAudioProcessor::getCurrentProgram()
@@ -164,7 +165,7 @@ void SimpleMBCompAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     spec.sampleRate = sampleRate;
     
     for( auto& comp : compressors )
-    comp.prepare(spec);
+        comp.prepare(spec);
     
     LP1.prepare(spec);
     HP1.prepare(spec);
@@ -179,7 +180,7 @@ void SimpleMBCompAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     
     inputGain.setRampDurationSeconds(0.05);     // 50 ms
     outputGain.setRampDurationSeconds(0.05);    // 50 ms
-
+    
     for ( auto& buffer : filterBuffers )
     {
         buffer.setSize(spec.numChannels, samplesPerBlock);
@@ -195,26 +196,26 @@ void SimpleMBCompAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool SimpleMBCompAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
     return true;
-  #else
+#else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
-
+    
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
-
+#endif
+    
     return true;
-  #endif
+#endif
 }
 #endif
 
@@ -266,7 +267,7 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -275,9 +276,9 @@ void SimpleMBCompAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
+    
     updateState();
-
+    
     applyGain(buffer, inputGain);
     
     splitBands(buffer);
@@ -344,7 +345,7 @@ bool SimpleMBCompAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SimpleMBCompAudioProcessor::createEditor()
 {
-//    return new juce::GenericAudioProcessorEditor(*this);
+    //    return new juce::GenericAudioProcessorEditor(*this);
     return new SimpleMBCompAudioProcessorEditor (*this);
 }
 
@@ -381,62 +382,62 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
     
     auto gainRange = NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f);
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Gain_In), 1},
+        params.at(Names::Gain_In), 1},
                                                      params.at(Names::Gain_In),
                                                      gainRange,
                                                      0));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Gain_Out), 1},
+        params.at(Names::Gain_Out), 1},
                                                      params.at(Names::Gain_Out),
                                                      gainRange,
                                                      0));
     
     auto thresholdRange = NormalisableRange<float>(-60, 12, 0.5, 1);
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Threshold_Low_Band), 1},
+        params.at(Names::Threshold_Low_Band), 1},
                                                      params.at(Names::Threshold_Low_Band),
                                                      thresholdRange,
                                                      0));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Threshold_Mid_Band), 1},
+        params.at(Names::Threshold_Mid_Band), 1},
                                                      params.at(Names::Threshold_Mid_Band),
                                                      thresholdRange,
                                                      0));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Threshold_High_Band), 1},
+        params.at(Names::Threshold_High_Band), 1},
                                                      params.at(Names::Threshold_High_Band),
                                                      thresholdRange,
                                                      0));
     
     auto attackReleaseRange = NormalisableRange<float>(5, 500, 1, 1);
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Attack_Low_Band), 1},
+        params.at(Names::Attack_Low_Band), 1},
                                                      params.at(Names::Attack_Low_Band),
                                                      attackReleaseRange,
                                                      50));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Attack_Mid_Band), 1},
+        params.at(Names::Attack_Mid_Band), 1},
                                                      params.at(Names::Attack_Mid_Band),
                                                      attackReleaseRange,
                                                      50));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Attack_High_Band), 1},
+        params.at(Names::Attack_High_Band), 1},
                                                      params.at(Names::Attack_High_Band),
                                                      attackReleaseRange,
                                                      50));
-
+    
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Release_Low_Band), 1},
+        params.at(Names::Release_Low_Band), 1},
                                                      params.at(Names::Release_Low_Band),
                                                      attackReleaseRange,
                                                      250));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Release_Mid_Band), 1},
+        params.at(Names::Release_Mid_Band), 1},
                                                      params.at(Names::Release_Mid_Band),
                                                      attackReleaseRange,
                                                      250));
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                     params.at(Names::Release_High_Band), 1},
+        params.at(Names::Release_High_Band), 1},
                                                      params.at(Names::Release_High_Band),
                                                      attackReleaseRange,
                                                      250));
@@ -449,71 +450,71 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleMBCompAudioProcessor::
     }
     
     layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
-                                                      params.at(Names::Ratio_Low_Band), 1},
+        params.at(Names::Ratio_Low_Band), 1},
                                                       params.at(Names::Ratio_Low_Band),
                                                       sa,
                                                       3));
     layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
-                                                      params.at(Names::Ratio_Mid_Band), 1},
+        params.at(Names::Ratio_Mid_Band), 1},
                                                       params.at(Names::Ratio_Mid_Band),
                                                       sa,
                                                       3));
     layout.add(std::make_unique<AudioParameterChoice>(ParameterID {
-                                                      params.at(Names::Ratio_High_Band), 1},
+        params.at(Names::Ratio_High_Band), 1},
                                                       params.at(Names::Ratio_High_Band),
                                                       sa,
                                                       3));
     
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Bypassed_Low_Band), 1},
+        params.at(Names::Bypassed_Low_Band), 1},
                                                     params.at(Names::Bypassed_Low_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Bypassed_Mid_Band), 1},
+        params.at(Names::Bypassed_Mid_Band), 1},
                                                     params.at(Names::Bypassed_Mid_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Bypassed_High_Band), 1},
+        params.at(Names::Bypassed_High_Band), 1},
                                                     params.at(Names::Bypassed_High_Band),
                                                     false));
     
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Mute_Low_Band), 1},
+        params.at(Names::Mute_Low_Band), 1},
                                                     params.at(Names::Mute_Low_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Mute_Mid_Band), 1},
+        params.at(Names::Mute_Mid_Band), 1},
                                                     params.at(Names::Mute_Mid_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Mute_High_Band), 1},
+        params.at(Names::Mute_High_Band), 1},
                                                     params.at(Names::Mute_High_Band),
                                                     false));
     
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Solo_Low_Band), 1},
+        params.at(Names::Solo_Low_Band), 1},
                                                     params.at(Names::Solo_Low_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Solo_Mid_Band), 1},
+        params.at(Names::Solo_Mid_Band), 1},
                                                     params.at(Names::Solo_Mid_Band),
                                                     false));
     layout.add(std::make_unique<AudioParameterBool>(ParameterID {
-                                                    params.at(Names::Solo_High_Band), 1},
+        params.at(Names::Solo_High_Band), 1},
                                                     params.at(Names::Solo_High_Band),
                                                     false));
     
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                    params.at(Names::Low_Mid_Crossover_Freq), 1},
-                                                    params.at(Names::Low_Mid_Crossover_Freq),
-                                                    NormalisableRange<float>(20, 999, 1, 1),
-                                                    400));
+        params.at(Names::Low_Mid_Crossover_Freq), 1},
+                                                     params.at(Names::Low_Mid_Crossover_Freq),
+                                                     NormalisableRange<float>(20, 999, 1, 1),
+                                                     400));
     
     layout.add(std::make_unique<AudioParameterFloat>(ParameterID {
-                                                    params.at(Names::Mid_High_Crossover_Freq), 1},
-                                                    params.at(Names::Mid_High_Crossover_Freq),
-                                                    NormalisableRange<float>(1000, 20000, 1, 1),
-                                                    2000));
+        params.at(Names::Mid_High_Crossover_Freq), 1},
+                                                     params.at(Names::Mid_High_Crossover_Freq),
+                                                     NormalisableRange<float>(1000, 20000, 1, 1),
+                                                     2000));
     
     return layout;
 }
