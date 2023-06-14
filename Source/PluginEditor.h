@@ -39,7 +39,7 @@ private:
     //                globalControls,
     //                bandControls;
     
-    GlobalControls globalControls { audioProcessor.apvts };
+    GlobalControls globalControls       { audioProcessor.apvts };
     CompressorBandControls bandControls { audioProcessor.apvts };
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleMBCompAudioProcessorEditor)

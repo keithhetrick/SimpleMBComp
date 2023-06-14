@@ -100,10 +100,10 @@ private:
     CompressorBand& highBandComp =  compressors[2];
     
     using Filter = juce::dsp::LinkwitzRileyFilter<float>;
-    //          fc0     fc1
+    //      fc0     fc1
     Filter  LP1,    AP2,
-    HP1,    LP2,
-    HP2;
+            HP1,    LP2,
+            HP2;
     
     juce::AudioParameterFloat* lowMidCrossover  { nullptr };
     juce::AudioParameterFloat* midHighCrossover { nullptr };

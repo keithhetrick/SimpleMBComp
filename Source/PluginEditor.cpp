@@ -17,7 +17,7 @@ void RotarySliderWithLabels::paint(juce::Graphics &g)
     using namespace juce;
     
     auto startAng = degreesToRadians(180.f + 45.f);
-    auto endAng = degreesToRadians(180.f - 45.f) + MathConstants<float>::twoPi;
+    auto endAng =   degreesToRadians(180.f - 45.f) + MathConstants<float>::twoPi;
     
     auto range = getRange();
     
@@ -227,7 +227,7 @@ void GlobalControls::resized()
     
     FlexBox flexbox;
     flexbox.flexDirection = FlexBox::Direction::row;
-    flexbox.flexWrap = FlexBox::Wrap::noWrap;
+    flexbox.flexWrap =      FlexBox::Wrap::noWrap;
     
     auto spacer = FlexItem().withWidth(4);
     auto endCap = FlexItem().withWidth(6);
@@ -284,8 +284,8 @@ void SimpleMBCompAudioProcessorEditor::resized()
     
     auto bounds = getLocalBounds();
     
-    controlBar.setBounds( bounds.removeFromTop(32) );
-    bandControls.setBounds( bounds.removeFromBottom(135) );
-    analyzer.setBounds( bounds.removeFromTop(225) );
+    controlBar.setBounds    ( bounds.removeFromTop(32) );
+    bandControls.setBounds  ( bounds.removeFromBottom(135) );
+    analyzer.setBounds      ( bounds.removeFromTop(225) );
     globalControls.setBounds( bounds );
 }
