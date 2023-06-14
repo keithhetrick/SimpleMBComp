@@ -8,8 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "Params.h"
-#include "Utilities.h"
+#include "DSP/Params.h"
+#include "GUI/Utilities.h"
 
 //==============================================================================
 void RotarySliderWithLabels::paint(juce::Graphics &g)
