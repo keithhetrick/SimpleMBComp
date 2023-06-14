@@ -141,12 +141,6 @@ juce::String RatioSlider::getDisplayString() const
     return currentChoice;
 }
 //==============================================================================
-Placeholder::Placeholder()
-{
-    juce::Random r;
-    customColor = juce::Colour(r.nextInt(255), r.nextInt(255), r.nextInt(255));
-}
-//==============================================================================
 GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
 {
     using namespace Params;
