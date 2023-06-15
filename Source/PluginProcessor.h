@@ -28,8 +28,8 @@
  4. Band select functionality.                                                  // DONE
  5. Band select buttons reflect the solo/mute/bypass state.                     // DONE
  6. Custom look & feel for sliders & toggle buttons.                            // DONE
- 7. Spectrum analyzer overview.
- 8. Data structures for spectrum analyzer.
+ 7. Spectrum analyzer overview.                                                 // DONE
+ 8. Data structures for spectrum analyzer.                                      // DONE
  9. Fifo usage in pluginProcessor::processBlock.
  10. mplementation of analyzer rendering pre-computed paths.
  11. Drawing crossovers on top of analyzer.
