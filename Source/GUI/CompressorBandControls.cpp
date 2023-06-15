@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    CompressorBandControl.cpp
-    Created: 14 Jun 2023 12:49:30am
-    Author:  Keith Hetrick
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ CompressorBandControl.cpp
+ Created: 14 Jun 2023 12:49:30am
+ Author:  Keith Hetrick
+ 
+ ==============================================================================
+ */
 
 #include "CompressorBandControls.h"
 #include "Utilities.h"
@@ -219,8 +219,8 @@ void CompressorBandControls::updateBandSelectButtonStates()
         auto& list = paramsToCheck[i];
         
         auto* bandButton = (i == 0) ? &lowBand :
-                           (i == 1) ? &midBand :
-                                      &highBand;
+        (i == 1) ? &midBand :
+        &highBand;
         
         if( auto* solo = paramHelper(list[0]);
            solo->get() )

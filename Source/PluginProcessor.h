@@ -26,8 +26,8 @@
  2. Main Band Controls (attack, release, threshold, ratio).                     // DONE
  3. Add solo/mute/bypass buttons.                                               // DONE
  4. Band select functionality.                                                  // DONE
- 5. Band select buttons reflect the solo/mute/bypass state.
- 6. Custom look & feel for sliders & toggle buttons.
+ 5. Band select buttons reflect the solo/mute/bypass state.                     // DONE
+ 6. Custom look & feel for sliders & toggle buttons.                            // DONE
  7. Spectrum analyzer overview.
  8. Data structures for spectrum analyzer.
  9. Fifo usage in pluginProcessor::processBlock.
@@ -103,7 +103,7 @@ private:
     //      fc0     fc1
     Filter  LP1,    AP2,
             HP1,    LP2,
-            HP2;
+                    HP2;
     
     juce::AudioParameterFloat* lowMidCrossover  { nullptr };
     juce::AudioParameterFloat* midHighCrossover { nullptr };

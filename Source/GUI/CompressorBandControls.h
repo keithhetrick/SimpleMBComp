@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    CompressorBandControl.h
-    Created: 14 Jun 2023 12:49:30am
-    Author:  Keith Hetrick
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ CompressorBandControl.h
+ Created: 14 Jun 2023 12:49:30am
+ Author:  Keith Hetrick
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -34,17 +34,17 @@ private:
                                 thresholdSliderAttachment,
                                 ratioSliderAttachment;
     
-    juce::ToggleButton  bypassButton,
-                        soloButton,
-                        muteButton,
-                        lowBand,
-                        midBand,
-                        highBand;
+    juce::ToggleButton bypassButton,
+                       soloButton,
+                       muteButton,
+                       lowBand,
+                       midBand,
+                       highBand;
     
     using BtnAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
     std::unique_ptr<BtnAttachment>  bypassButtonAttachment,
-    soloButtonAttachment,
-    muteButtonAttachment;
+                                    soloButtonAttachment,
+                                    muteButtonAttachment;
     
     juce::Component::SafePointer<CompressorBandControls> safePtr {this};
     
@@ -60,5 +60,4 @@ private:
                                         juce::Button& colorSource);
     
     void updateBandSelectButtonStates();
-    
 };

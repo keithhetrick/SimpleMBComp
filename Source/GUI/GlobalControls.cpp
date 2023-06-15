@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    GlobalControls.cpp
-    Created: 14 Jun 2023 12:55:54am
-    Author:  Keith Hetrick
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ GlobalControls.cpp
+ Created: 14 Jun 2023 12:55:54am
+ Author:  Keith Hetrick
+ 
+ ==============================================================================
+ */
 
 #include "GlobalControls.h"
 #include "../DSP/Params.h"
@@ -99,7 +99,7 @@ void GlobalControls::resized()
     
     FlexBox flexbox;
     flexbox.flexDirection = FlexBox::Direction::row;
-    flexbox.flexWrap = FlexBox::Wrap::noWrap;
+    flexbox.flexWrap =      FlexBox::Wrap::noWrap;
     
     auto spacer = FlexItem().withWidth(4);
     auto endCap = FlexItem().withWidth(6);
