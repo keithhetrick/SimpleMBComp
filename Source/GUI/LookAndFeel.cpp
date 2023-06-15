@@ -12,6 +12,7 @@
 #include "RotarySliderWithLabels.h"
 #include "CustomButtons.h"
 
+//==============================================================================
 void LookAndFeel::drawRotarySlider(juce::Graphics & g,
                                    int x,
                                    int y,
@@ -129,7 +130,10 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
         
         const int cornerSize = 4;
         
-        g.setColour(buttonIsOn ? juce::Colours::white : juce::Colours::black);
+        g.setColour(buttonIsOn ?
+                    toggleButton.findColour(TextButton::ColourIds::buttonColourId) :
+                    toggleButton.findColour(TextButton::ColourIds::buttonColourId));
+        
         g.fillRoundedRectangle(bounds.toFloat(), cornerSize);
         
         g.setColour(buttonIsOn ? juce::Colours::black : juce::Colours::white);
