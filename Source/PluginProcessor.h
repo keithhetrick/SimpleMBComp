@@ -30,9 +30,9 @@
  6. Custom look & feel for sliders & toggle buttons.                            // DONE
  7. Spectrum analyzer overview.                                                 // DONE
  8. Data structures for spectrum analyzer.                                      // DONE
- 9. Fifo usage in pluginProcessor::processBlock.
- 10. mplementation of analyzer rendering pre-computed paths.
- 11. Drawing crossovers on top of analyzer.
+ 9. Fifo usage in pluginProcessor::processBlock.                                // DONE
+ 10. mplementation of analyzer rendering pre-computed paths.                    // DONE
+ 11. Drawing crossovers on top of analyzer plot.
  12. Drawing gain reduction on top of analyzer.
  13. Analyzer bypass.
  14. Global bypass button.
@@ -57,11 +57,11 @@ public:
     ~SimpleMBCompAudioProcessor() override;
     
     //==============================================================================
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
-    void releaseResources() override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock)        override;
+    void releaseResources()                                           override;
     
 #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported(const BusesLayout &layouts) const override;
+    bool isBusesLayoutSupported(const BusesLayout &layouts) const     override;
 #endif
     
     void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
@@ -95,7 +95,7 @@ public:
     APVTS apvts{*this, nullptr, "Parameters", createParameterLayout()};
     
     using BlockType = juce::AudioBuffer<float>;
-    SingleChannelSampleFifo<BlockType> leftChannelFifo { Channel::Left };
+    SingleChannelSampleFifo<BlockType> leftChannelFifo  { Channel::Left };
     SingleChannelSampleFifo<BlockType> rightChannelFifo { Channel::Right };
     
 private:
@@ -122,7 +122,7 @@ private:
     template<typename T, typename U>
     void applyGain(T& buffer, U& gain)
     {
-        auto block = juce::dsp::AudioBlock<float>(buffer);
+        auto block = juce::dsp::AudioBlock<float>           (buffer);
         auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
         gain.process(ctx);
     }
@@ -132,7 +132,7 @@ private:
     void splitBands(const juce::AudioBuffer<float>& inputBuffer);
     
     juce::dsp::Oscillator<float> osc;
-    juce::dsp::Gain<float> gain;
+    juce::dsp::Gain<float>       gain;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SimpleMBCompAudioProcessor)
 };

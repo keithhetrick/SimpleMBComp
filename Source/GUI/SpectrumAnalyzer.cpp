@@ -275,7 +275,7 @@ juce::Rectangle<int> SpectrumAnalyzer::getRenderArea()
 juce::Rectangle<int> SpectrumAnalyzer::getAnalysisArea()
 {
     auto bounds = getRenderArea();
-    bounds.removeFromTop(4);
+    bounds.removeFromTop   (4);
     bounds.removeFromBottom(4);
     return bounds;
 }

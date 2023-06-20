@@ -19,7 +19,6 @@
 /**
  */
 //==============================================================================
-
 class SimpleMBCompAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
