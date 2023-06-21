@@ -9,241 +9,28 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "DSP/Params.h"
-#include "GUI/Utilities.h"
 
 
 //==============================================================================
-void RotarySliderWithLabels::paint(juce::Graphics &g)
+ControlBar::ControlBar()
 {
-    using namespace juce;
+    analyzerButton.setToggleState(true, juce::NotificationType::dontSendNotification);
+    addAndMakeVisible(analyzerButton);
     
-    auto startAng = degreesToRadians(180.f + 45.f);
-    auto endAng =   degreesToRadians(180.f - 45.f) + MathConstants<float>::twoPi;
-    
-    auto range = getRange();
-    
-    auto sliderBounds = getSliderBounds();
-    
-    auto bounds = getLocalBounds();
-    
-    g.setColour(Colours::blueviolet);
-    g.drawFittedText(getName(),
-                     bounds.removeFromTop(getTextHeight() + 2),
-                     Justification::centredBottom,
-                     1);
-    
-    getLookAndFeel().drawRotarySlider(g,
-                                      sliderBounds.getX(),
-                                      sliderBounds.getY(),
-                                      sliderBounds.getWidth(),
-                                      sliderBounds.getHeight(),
-                                      jmap(getValue(), range.getStart(), range.getEnd(), 0.0, 1.0),
-                                      startAng,
-                                      endAng,
-                                      *this);
-    
-    auto center = sliderBounds.toFloat().getCentre();
-    auto radius = sliderBounds.getWidth() * 0.5f;
-    
-    g.setColour(Colour(0u, 172u, 1u));
-    g.setFont(getTextHeight());
-    
-    auto numChoices = labels.size();
-    for( int i = 0; i < numChoices; ++i )
-    {
-        auto pos = labels[i].pos;
-        jassert(0.f <= pos);
-        jassert(pos <= 1.f);
-        
-        auto ang = jmap(pos, 0.f, 1.f, startAng, endAng);
-        
-        auto c = center.getPointOnCircumference(radius + getTextHeight() * 0.5f + 1, ang);
-        
-        Rectangle<float> r;
-        auto str = labels[i].label;
-        r.setSize  (g.getCurrentFont().getStringWidth(str), getTextHeight());
-        r.setCentre(c);
-        r.setY     (r.getY() + getTextHeight());
-        
-        g.drawFittedText(str, r.toNearestInt(),
-                         juce::Justification::centred,
-                         1);
-    }
-    
+    addAndMakeVisible(globalBypassButton);
 }
 
-juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const
+void ControlBar::resized()
 {
     auto bounds = getLocalBounds();
     
-    bounds.removeFromTop(getTextHeight() * 1.5);
+    analyzerButton.setBounds(bounds.removeFromLeft(50)
+                             .withTrimmedTop(4)
+                             .withTrimmedBottom(4));
     
-    auto size = juce::jmin(bounds.getWidth(), bounds.getHeight());
-    
-    size -= getTextHeight() * 1.5;
-    juce::Rectangle<int> r;
-    r.setSize  (size, size);
-    r.setCentre(bounds.getCentreX(), 0);
-    r.setY     (bounds.getY());
-    
-    return r;
-    
-}
-
-juce::String RotarySliderWithLabels::getDisplayString() const
-{
-    if( auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param) )
-        return choiceParam->getCurrentChoiceName();
-    
-    juce::String str;
-    bool addK = false;
-    
-    if( auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param) )
-    {
-        float val = getValue();
-        
-        addK = truncateKiloValue(val);
-        str = juce::String(val, (addK ? 2 : 0));
-    }
-    else
-    {
-        jassertfalse; //this shouldn't happen!
-    }
-    
-    if( suffix.isNotEmpty() )
-    {
-        str << " ";
-        if( addK )
-            str << "k";
-        
-        str << suffix;
-    }
-    
-    return str;
-}
-
-void RotarySliderWithLabels::changeParam(juce::RangedAudioParameter *p)
-{
-    param = p;
-    repaint();
-}
-//==============================================================================
-juce::String RatioSlider::getDisplayString() const
-{
-    auto choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param);
-    jassert(choiceParam != nullptr);
-    
-    auto currentChoice = choiceParam->getCurrentChoiceName();
-    if( currentChoice.contains(".0") )
-        currentChoice = currentChoice.substring(0, currentChoice.indexOf("."));
-    
-    currentChoice << ":1";
-    
-    return currentChoice;
-}
-//==============================================================================
-GlobalControls::GlobalControls(juce::AudioProcessorValueTreeState& apvts)
-{
-    using namespace Params;
-    const auto& params = GetParams();
-    
-    auto getParamHelper = [&params, &apvts](const auto& name) -> auto&
-    {
-        return getParam(apvts, params, name);
-    };
-    
-    auto& gainInParam =  getParamHelper(Names::Gain_In);
-    auto& lowMidParam =  getParamHelper(Names::Low_Mid_Crossover_Freq);
-    auto& midHighParam = getParamHelper(Names::Mid_High_Crossover_Freq);
-    auto& gainOutParam = getParamHelper(Names::Gain_Out);
-    
-    inGainSlider =       std::make_unique<RSWL>  (&gainInParam,
-                                                  "dB",
-                                                  "INPUT TRIM");
-    lowMidXoverSlider =  std::make_unique<RSWL>  (&lowMidParam,
-                                                  "Hz",
-                                                  "LOW-MID X-OVER");
-    midHighXoverSlider = std::make_unique<RSWL>  (&midHighParam,
-                                                  "Hz",
-                                                  "MID-HI X-OVER");
-    outGainSlider =      std::make_unique<RSWL>  (&gainOutParam,
-                                                  "dB",
-                                                  "OUTPUT TRIM");
-    
-    auto makeAttachmentHelper = [&params, &apvts](auto& attachment,
-                                                  const auto& name,
-                                                  auto& slider)
-    {
-        makeAttachment(attachment, apvts, params, name, slider);
-    };
-    
-    makeAttachmentHelper(inGainSliderAttachment,
-                         Names::Gain_In,
-                         *inGainSlider);
-    
-    makeAttachmentHelper(lowMidXoverSliderAttachment,
-                         Names::Low_Mid_Crossover_Freq,
-                         *lowMidXoverSlider);
-    
-    makeAttachmentHelper(midHighXoverSliderAttachment,
-                         Names::Mid_High_Crossover_Freq,
-                         *midHighXoverSlider);
-    
-    makeAttachmentHelper(outGainSliderAttachment,
-                         Names::Gain_Out,
-                         *outGainSlider);
-    
-    addLabelPairs(inGainSlider->labels,
-                  gainInParam,
-                  "dB");
-    
-    addLabelPairs(lowMidXoverSlider->labels,
-                  lowMidParam,
-                  "Hz");
-    
-    addLabelPairs(midHighXoverSlider->labels,
-                  midHighParam,
-                  "Hz");
-    
-    addLabelPairs(outGainSlider->labels,
-                  gainOutParam,
-                  "dB");
-    
-    addAndMakeVisible(*inGainSlider);
-    addAndMakeVisible(*lowMidXoverSlider);
-    addAndMakeVisible(*midHighXoverSlider);
-    addAndMakeVisible(*outGainSlider);
-}
-
-void GlobalControls::paint(juce::Graphics &g)
-{
-    auto bounds = getLocalBounds();
-    drawModuleBackground(g, bounds);
-}
-
-void GlobalControls::resized()
-{
-    auto bounds = getLocalBounds().reduced(5);
-    using namespace juce;
-    
-    FlexBox flexbox;
-    flexbox.flexDirection = FlexBox::Direction::row;
-    flexbox.flexWrap =      FlexBox::Wrap::noWrap;
-    
-    auto spacer = FlexItem().withWidth(4);
-    auto endCap = FlexItem().withWidth(6);
-    
-    flexbox.items.add(endCap);
-    flexbox.items.add(FlexItem(*inGainSlider).withFlex(1.f));
-    flexbox.items.add(spacer);
-    flexbox.items.add(FlexItem(*lowMidXoverSlider).withFlex(1.f));
-    flexbox.items.add(spacer);
-    flexbox.items.add(FlexItem(*midHighXoverSlider).withFlex(1.f));
-    flexbox.items.add(spacer);
-    flexbox.items.add(FlexItem(*outGainSlider).withFlex(1.f));
-    flexbox.items.add(endCap);
-    
-    flexbox.performLayout(bounds);
+    globalBypassButton.setBounds(bounds.removeFromRight(60)
+                                 .withTrimmedTop(2)
+                                 .withTrimmedBottom(2));
 }
 //==============================================================================
 SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBCompAudioProcessor& p)
@@ -253,7 +40,18 @@ SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBComp
     // editor's size to whatever you need it to be.
     
     setLookAndFeel(&lnf);
-    //    addAndMakeVisible(controlBar);
+    controlBar.analyzerButton.onClick = [this]()
+    {
+        auto shouldBeOn = controlBar.analyzerButton.getToggleState();
+        analyzer.toggleAnalysisEnablement(shouldBeOn);
+    };
+    
+    controlBar.globalBypassButton.onClick = [this]()
+    {
+        toggleGlobalBypassState();
+    };
+    
+    addAndMakeVisible(controlBar);
     addAndMakeVisible(analyzer);
     addAndMakeVisible(globalControls);
     addAndMakeVisible(bandControls);
@@ -306,4 +104,66 @@ void SimpleMBCompAudioProcessorEditor::timerCallback()
     };
     
     analyzer.update(values);
+    
+    updateGlobalBypassButton();
+}
+
+void SimpleMBCompAudioProcessorEditor::updateGlobalBypassButton()
+{
+    auto params = getBypassParams();
+    
+    bool allBandsAreBypassed = std::all_of(params.begin(),
+                                           params.end(),
+                                           [](const auto& param){ return param->get(); });
+    
+    controlBar.globalBypassButton.setToggleState(allBandsAreBypassed,
+                                                 juce::NotificationType::dontSendNotification);
+}
+
+void SimpleMBCompAudioProcessorEditor::toggleGlobalBypassState()
+{
+    auto shouldEnableEverything = ! controlBar.globalBypassButton.getToggleState();
+    
+    auto params = getBypassParams();
+    
+    auto bypassParamHelper = [](auto* param, bool shouldBeBypassed)
+    {
+        param->beginChangeGesture();
+        param->setValueNotifyingHost( shouldBeBypassed ? 1.f : 0.f );
+        param->endChangeGesture();
+    };
+    
+    for( auto* param : params )
+    {
+        bypassParamHelper(param, ! shouldEnableEverything);
+    }
+    
+    bandControls.toggleAllBands(! shouldEnableEverything);
+}
+
+std::array<juce::AudioParameterBool*, 3>SimpleMBCompAudioProcessorEditor::getBypassParams()
+{
+    using namespace Params;
+    using namespace juce;
+    const auto& params = Params::GetParams();
+    auto& apvts = audioProcessor.apvts;
+    
+    auto boolHelper = [&apvts, &params](const auto& paramName)
+    {
+        auto param = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter(params.at(paramName)));
+        jassert(param != nullptr);
+        
+        return param;
+    };
+    
+    auto* lowBypassParam =  boolHelper(Names::Bypassed_Low_Band);
+    auto* midBypassParam =  boolHelper(Names::Bypassed_Mid_Band);
+    auto* highBypassParam = boolHelper(Names::Bypassed_High_Band);
+    
+    return
+    {
+        lowBypassParam,
+        midBypassParam,
+        highBypassParam
+    };
 }
