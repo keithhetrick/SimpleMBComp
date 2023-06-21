@@ -26,11 +26,10 @@ void ControlBar::resized()
     
     analyzerButton.setBounds(bounds.removeFromLeft(50)
                              .withTrimmedTop(4)
-                             .withTrimmedBottom(4));
+                             .withTrimmedLeft(4));
     
     globalBypassButton.setBounds(bounds.removeFromRight(60)
-                                 .withTrimmedTop(2)
-                                 .withTrimmedBottom(2));
+                                 .withTrimmedTop(2));
 }
 //==============================================================================
 SimpleMBCompAudioProcessorEditor::SimpleMBCompAudioProcessorEditor (SimpleMBCompAudioProcessor& p)
@@ -70,12 +69,61 @@ SimpleMBCompAudioProcessorEditor::~SimpleMBCompAudioProcessorEditor()
 void SimpleMBCompAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    //    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    //
-    //    g.setColour (juce::Colours::white);
-    //    g.setFont (18.0f);
-    //    g.drawFittedText ("Hello from the world of SimpleMBComp!", getLocalBounds(), juce::Justification::centred, 1);
-    g.fillAll(juce::Colours::black);
+    using namespace juce;
+    
+    g.fillAll (Colours::black);
+    
+    Path curve;
+    
+    auto bounds = getLocalBounds();
+    auto center = bounds.getCentre();
+    
+    g.setFont(Font("Iosevka Term Slab", 30, 0)); //https://github.com/be5invis/Iosevka
+    
+    String title { "SimpleMBComp" };
+    g.setFont(30);
+    auto titleWidth = g.getCurrentFont().getStringWidth(title);
+    
+    curve.startNewSubPath(center.x, 32);
+    curve.lineTo(center.x - titleWidth * 0.45f, 32);
+    
+    auto cornerSize = 20;
+    auto curvePos = curve.getCurrentPosition();
+    curve.quadraticTo(curvePos.getX() - cornerSize, curvePos.getY(),
+                      curvePos.getX() - cornerSize, curvePos.getY() - 16);
+    curvePos = curve.getCurrentPosition();
+    curve.quadraticTo(curvePos.getX(), 2,
+                      curvePos.getX() - cornerSize, 2);
+    
+    curve.lineTo({0.f, 2.f});
+    curve.lineTo(0.f, 0.f);
+    curve.lineTo(center.x, 0.f);
+//    curve.closeSubPath();
+    
+//    g.setColour(Colour(97u, 18u, 167u));
+    g.setColour(ColorScheme::getSliderFillColor());
+    g.fillPath(curve);
+    g.setColour(ColorScheme::getModuleBorderColor());
+    g.strokePath(curve, PathStrokeType(2));
+    
+    
+    curve.applyTransform(AffineTransform().scaled(-1, 1));
+    curve.applyTransform(AffineTransform().translated(getWidth(), 0));
+    g.setColour(ColorScheme::getSliderFillColor());
+    g.fillPath(curve);
+    g.setColour(ColorScheme::getModuleBorderColor());
+    g.strokePath(curve, PathStrokeType(2));
+    
+    
+//    g.setColour(Colour(255u, 154u, 1u));
+    g.setColour(ColorScheme::getSliderBorderColor().darker());
+    g.drawFittedText(title, bounds, juce::Justification::centredTop, 1);
+    
+//    auto buildDate = Time::getCompilationDate().toString(true, false);
+//    auto buildTime = Time::getCompilationDate().toString(false, true);
+//    g.setFont(12);
+//    g.drawFittedText(buildDate + "\n" + buildTime, crossoverThresholdDisplay.getBounds().withY(6), Justification::topRight, 2);
+
 }
 
 void SimpleMBCompAudioProcessorEditor::resized()
@@ -85,10 +133,14 @@ void SimpleMBCompAudioProcessorEditor::resized()
     
     auto bounds = getLocalBounds();
     
-    controlBar.setBounds    ( bounds.removeFromTop(32) );
-    bandControls.setBounds  ( bounds.removeFromBottom(135) );
-    analyzer.setBounds      ( bounds.removeFromTop(225) );
-    globalControls.setBounds( bounds );
+    controlBar.setBounds( bounds.removeFromTop(32) );
+    
+    bandControls.setBounds(bounds.removeFromBottom(137));
+    
+    analyzer.setBounds(bounds.removeFromTop(216));
+//    overlay->setBounds(analyzer.getBounds());
+    
+    globalControls.setBounds(bounds);
 }
 
 void SimpleMBCompAudioProcessorEditor::timerCallback()
@@ -129,7 +181,7 @@ void SimpleMBCompAudioProcessorEditor::toggleGlobalBypassState()
     auto bypassParamHelper = [](auto* param, bool shouldBeBypassed)
     {
         param->beginChangeGesture();
-        param->setValueNotifyingHost( shouldBeBypassed ? 1.f : 0.f );
+        param->setValueNotifyingHost(shouldBeBypassed ? 1.f : 0.f );
         param->endChangeGesture();
     };
     
@@ -141,7 +193,7 @@ void SimpleMBCompAudioProcessorEditor::toggleGlobalBypassState()
     bandControls.toggleAllBands(! shouldEnableEverything);
 }
 
-std::array<juce::AudioParameterBool*, 3>SimpleMBCompAudioProcessorEditor::getBypassParams()
+std::array<juce::AudioParameterBool*, 3> SimpleMBCompAudioProcessorEditor::getBypassParams()
 {
     using namespace Params;
     using namespace juce;
